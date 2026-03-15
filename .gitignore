@@ -6,6 +6,7 @@ __pycache__/
 .venv/
 venv/
 .streamlit/
+.terraform/
 docs/*
 !docs/.gitkeep
 !docs/sample-deploy-note.md
@@ -14,3 +15,5 @@ chroma_db/*
 chat_history/*.json
 !chat_history/.gitkeep
 .pytest_cache/
+infra/terraform/**/.terraform/
+infra/terraform/**/backend.hcl

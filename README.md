@@ -337,6 +337,24 @@ Usually leave this blank.
 
 Only set it if you are using another OpenAI-compatible endpoint, such as Azure OpenAI later.
 
+### `APP_CONFIGURATION_ENDPOINT`
+
+Optional Azure App Configuration endpoint.
+
+When this is set, the app will try to load non-secret settings from Azure App Configuration at startup.
+
+### `APP_CONFIGURATION_LABEL`
+
+Optional App Configuration label.
+
+This is useful for environment-specific values such as `dev`, `test`, or `prod`.
+
+### `APP_CONFIGURATION_PREFIX`
+
+Optional key prefix for App Configuration keys.
+
+The Terraform starter uses `bonzo:` so keys like `bonzo:OPENAI_MODEL` load into the app as `OPENAI_MODEL`.
+
 ### `OPENAI_MODEL`
 
 The chat model name.
@@ -700,6 +718,57 @@ For this learning repo, the easiest path is:
 - keep it as one app
 - use mock mode or a small OpenAI-backed setup
 - add hosting only after the local app feels comfortable
+
+This repo now includes a Terraform starter for Azure App Service as a Linux container in:
+
+```text
+infra/terraform/azure-app-service
+```
+
+and a separate bootstrap workspace for remote state in:
+
+```text
+infra/terraform/bootstrap-state
+```
+
+That workspace provisions:
+
+- Azure Container Registry
+- Linux App Service
+- Key Vault
+- App Configuration
+
+The bootstrap workspace provisions:
+
+- Azure Storage account for Terraform state
+- blob container for remote state and locking
+
+See the deployment notes in:
+
+```text
+infra/terraform/azure-app-service/README.md
+```
+
+GitHub Actions workflows now live in:
+
+```text
+.github/workflows
+```
+
+They cover:
+
+- `ci.yml`
+  - Python compile/tests plus Terraform formatting and validation
+- `deploy-app.yml`
+  - build, push, and deploy the container to Azure App Service
+- `deploy-infra.yml`
+  - run the App Service Terraform workspace with remote state
+
+If you want the click-by-click Azure and GitHub setup for OIDC, secrets, variables, and role assignments, the detailed guide is in:
+
+```text
+infra/terraform/azure-app-service/README.md
+```
 
 ## If You Want To Keep Going Later
 

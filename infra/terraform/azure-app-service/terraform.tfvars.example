@@ -1,0 +1,9 @@
+location               = "eastus"
+name_prefix            = "bonzo"
+container_repository   = "bonzo-assistant"
+container_image_tag    = "latest"
+mock_mode              = true
+openai_model           = "gpt-4.1-mini"
+embedding_model        = "text-embedding-3-small"
+openai_api_key         = ""
+app_configuration_key_prefix = "bonzo:"

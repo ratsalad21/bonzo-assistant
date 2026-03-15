@@ -1,0 +1,3 @@
+name_prefix    = "bonzo"
+location       = "eastus"
+container_name = "tfstate"

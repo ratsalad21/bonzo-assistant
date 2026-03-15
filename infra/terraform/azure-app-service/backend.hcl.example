@@ -1,0 +1,5 @@
+resource_group_name  = "bonzo-tfstate-rg"
+storage_account_name = "bonzotfstate12345"
+container_name       = "tfstate"
+key                  = "azure-app-service/dev.tfstate"
+use_azuread_auth     = true

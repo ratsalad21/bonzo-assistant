@@ -1,0 +1,132 @@
+name: Deploy Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Terraform workspace / Azure environment label"
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+        default: dev
+      action:
+        description: "Terraform action to run"
+        required: true
+        type: choice
+        options:
+          - plan
+          - apply
+        default: plan
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-infra-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  terraform:
+    name: Terraform ${{ inputs.action }} (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: infra/terraform/azure-app-service
+    env:
+      AZURE_CORE_OUTPUT: none
+      TF_IN_AUTOMATION: "true"
+      TF_INPUT: "false"
+      ARM_USE_OIDC: "true"
+      ARM_USE_AZUREAD: "true"
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      TF_VAR_openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate infrastructure settings
+        run: |
+          missing=0
+          for name in TF_STATE_RESOURCE_GROUP TF_STATE_STORAGE_ACCOUNT TF_STATE_CONTAINER; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub environment variable: $name"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+        env:
+          TF_STATE_RESOURCE_GROUP: ${{ vars.TF_STATE_RESOURCE_GROUP }}
+          TF_STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
+          TF_STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Render backend config for remote state
+        run: |
+          cat > backend.ci.hcl <<EOF
+          resource_group_name  = "${TF_STATE_RESOURCE_GROUP}"
+          storage_account_name = "${TF_STATE_STORAGE_ACCOUNT}"
+          container_name       = "${TF_STATE_CONTAINER}"
+          key                  = "azure-app-service/${DEPLOY_ENVIRONMENT}.tfstate"
+          use_azuread_auth     = true
+          use_oidc             = true
+          EOF
+        env:
+          DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
+          TF_STATE_RESOURCE_GROUP: ${{ vars.TF_STATE_RESOURCE_GROUP }}
+          TF_STATE_STORAGE_ACCOUNT: ${{ vars.TF_STATE_STORAGE_ACCOUNT }}
+          TF_STATE_CONTAINER: ${{ vars.TF_STATE_CONTAINER }}
+
+      - name: Render Terraform variable overrides
+        run: |
+          cat > ci.auto.tfvars <<EOF
+          name_prefix                  = "${NAME_PREFIX:-bonzo}"
+          location                     = "${LOCATION:-eastus}"
+          app_service_plan_sku_name    = "${APP_SERVICE_PLAN_SKU_NAME:-B1}"
+          acr_sku                      = "${ACR_SKU:-Basic}"
+          container_repository         = "${CONTAINER_REPOSITORY:-bonzo-assistant}"
+          container_image_tag          = "${CONTAINER_IMAGE_TAG:-latest}"
+          mock_mode                    = ${MOCK_MODE:-true}
+          openai_model                 = "${OPENAI_MODEL:-gpt-4.1-mini}"
+          embedding_model              = "${EMBEDDING_MODEL:-text-embedding-3-small}"
+          openai_base_url              = "${OPENAI_BASE_URL}"
+          app_model_context_window     = ${APP_MODEL_CONTEXT_WINDOW:-128000}
+          app_configuration_key_prefix = "${APP_CONFIGURATION_KEY_PREFIX:-bonzo:}"
+          EOF
+        env:
+          NAME_PREFIX: ${{ vars.NAME_PREFIX }}
+          LOCATION: ${{ vars.LOCATION }}
+          APP_SERVICE_PLAN_SKU_NAME: ${{ vars.APP_SERVICE_PLAN_SKU_NAME }}
+          ACR_SKU: ${{ vars.ACR_SKU }}
+          CONTAINER_REPOSITORY: ${{ vars.AZURE_CONTAINER_REPOSITORY }}
+          CONTAINER_IMAGE_TAG: ${{ vars.CONTAINER_IMAGE_TAG }}
+          MOCK_MODE: ${{ vars.MOCK_MODE }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          EMBEDDING_MODEL: ${{ vars.EMBEDDING_MODEL }}
+          OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
+          APP_MODEL_CONTEXT_WINDOW: ${{ vars.APP_MODEL_CONTEXT_WINDOW }}
+          APP_CONFIGURATION_KEY_PREFIX: ${{ vars.APP_CONFIGURATION_KEY_PREFIX }}
+
+      - name: Terraform init
+        run: terraform init -backend-config=backend.ci.hcl
+
+      - name: Select Terraform workspace
+        run: terraform workspace select "${{ inputs.environment }}" || terraform workspace new "${{ inputs.environment }}"
+
+      - name: Terraform plan
+        run: terraform plan -out=tfplan
+
+      - name: Terraform apply
+        if: ${{ inputs.action == 'apply' }}
+        run: terraform apply -auto-approve tfplan
