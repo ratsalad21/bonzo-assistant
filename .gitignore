@@ -1,0 +1,16 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+.streamlit/
+docs/*
+!docs/.gitkeep
+!docs/sample-deploy-note.md
+chroma_db/*
+!chroma_db/.gitkeep
+chat_history/*.json
+!chat_history/.gitkeep
+.pytest_cache/
