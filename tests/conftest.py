@@ -1,3 +1,9 @@
+"""Test configuration shared across the lightweight test suite.
+
+Pytest runs the tests from the repo root, so we add the project folder to
+`sys.path` here once instead of repeating import setup in every test file.
+"""
+
 import sys
 from pathlib import Path
 

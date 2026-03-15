@@ -1,3 +1,10 @@
+"""Shared UI rendering and custom styling.
+
+This module keeps the visual layer separate from the business logic. That makes
+it easier to learn the app in layers: state, orchestration, data, and then the
+UI that renders the results of those systems.
+"""
+
 import re
 from typing import Any
 
@@ -65,6 +72,8 @@ def _render_agent_activity(activity: dict[str, Any], debug: bool) -> None:
 
 def render_message_with_code(content: str) -> None:
     """Render markdown content while preserving fenced code blocks separately."""
+    # Streamlit can render markdown directly, but splitting code fences out
+    # gives us cleaner code blocks and a more predictable teaching demo.
     parts = re.split(r"```(\w+)?\n?(.*?)\n?```", content, flags=re.DOTALL)
 
     language = ""

@@ -1,3 +1,10 @@
+"""Prompt assembly, lightweight token budgeting, and response streaming.
+
+This module is where the app turns chat state plus orchestration output into a
+provider request. It also owns mock-mode replies so the rest of the app can
+exercise the same flow whether calls are local or real.
+"""
+
 from typing import Any
 
 from config import (
@@ -108,6 +115,8 @@ def build_turn_instructions(
         parts.append(agent_notes.strip())
 
     if specialist_outputs:
+        # Specialists hand back structured notes so the final answer step can
+        # stay one model call instead of a tangle of ad-hoc prompt strings.
         specialist_sections: list[str] = []
         for output in specialist_outputs:
             lines = [
@@ -198,6 +207,8 @@ def _build_mock_response(
     specialist_outputs: list[dict[str, Any]],
 ) -> str:
     """Create a more natural mock response that feels like a real assistant reply."""
+    # Mock mode is most useful when it still feels like a normal assistant.
+    # That way a beginner can learn the app flow without reading raw debug text.
     intro = _pick_mock_intro(route_label, latest_user_message)
     bullets = _render_mock_specialist_advice(specialist_outputs)
 

@@ -1,3 +1,10 @@
+"""Retrieval-augmented generation helpers backed by local Chroma storage.
+
+This module owns chunking, embeddings, indexing, and search. It intentionally
+uses a local on-disk vector store because that keeps the retrieval system easy
+to inspect while learning.
+"""
+
 import hashlib
 import re
 from typing import Any, Optional
@@ -11,6 +18,8 @@ from openai_client import get_openai_client
 client: Optional[chromadb.PersistentClient] = None
 collection: Optional[chromadb.Collection] = None
 
+# These retrieval constants are simple baseline defaults. They are here to keep
+# the app predictable and teachable rather than perfectly tuned.
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 100
 COLLECTION_NAME = "documents"
@@ -86,6 +95,8 @@ def _embed_texts(texts: list[str]) -> list[list[float]]:
         return []
 
     if MOCK_MODE:
+        # The mock embedding path gives us deterministic vectors so retrieval can
+        # still be demonstrated without paying for provider calls.
         dimensions = 64
         embeddings: list[list[float]] = []
         for text in texts:

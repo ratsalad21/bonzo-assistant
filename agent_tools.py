@@ -1,3 +1,10 @@
+"""Tool-style wrappers used by the agent layer.
+
+The agents work more cleanly when they call narrow helper functions with simple
+inputs and outputs. This module provides that thin wrapper layer around the
+document and retrieval code so orchestration stays easier to read.
+"""
+
 from typing import Any
 
 from documents import get_document_preview, list_saved_documents

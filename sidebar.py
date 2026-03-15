@@ -1,3 +1,10 @@
+"""Sidebar UI for controls, sessions, and document tools.
+
+The sidebar is where the app collects everything that is not the main chat
+transcript: status, settings, saved sessions, document management, and learning
+toggles. Keeping it in one module makes the app layout easier to reason about.
+"""
+
 from typing import Any
 
 import streamlit as st
@@ -233,6 +240,8 @@ def render_sidebar(provider_status: dict[str, Any], indexed_docs: list[dict[str,
             st.success("Chat saved")
 
         st.header("Settings")
+        # These are intentionally exposed in the UI because tuning them is part
+        # of the learning experience for this project.
         temperature = st.slider("Temperature", 0.0, 2.0, 0.7)
         max_tokens = st.slider(
             "Max Output Tokens",

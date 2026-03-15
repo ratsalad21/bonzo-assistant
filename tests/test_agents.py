@@ -1,3 +1,10 @@
+"""Small routing tests for the agent layer.
+
+These tests focus on the highest-signal question for this module: does the
+orchestrator choose the expected specialist path for a few representative
+prompts?
+"""
+
 import agents
 
 

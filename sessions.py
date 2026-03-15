@@ -1,3 +1,10 @@
+"""Local chat-session persistence.
+
+This module saves and loads conversation history as JSON files. That makes the
+state easy to inspect on disk and keeps the learning app free from database
+setup while still demonstrating real persistence.
+"""
+
 import datetime
 import json
 import re
@@ -103,6 +110,8 @@ def create_chat_session(title: str | None = None) -> str:
         session_id = f"{base}-{counter}"
         counter += 1
 
+    # Writing the file immediately means a "new session" really exists on disk
+    # even before the first message is sent.
     payload = {
         "title": title or f"Chat {timestamp.strftime('%Y-%m-%d %H:%M')}",
         "created_at": timestamp.isoformat(),

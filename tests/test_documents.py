@@ -1,3 +1,5 @@
+"""Small tests for local document helper behavior."""
+
 from pathlib import Path
 
 import documents

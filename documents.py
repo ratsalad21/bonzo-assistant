@@ -1,3 +1,10 @@
+"""Local document handling for uploads, previews, and indexing.
+
+This module owns the "file side" of RAG. It saves uploaded files, extracts
+text, and hands clean text off to the retrieval layer. Separating that work
+from `rag.py` keeps file concerns and vector-search concerns easier to learn.
+"""
+
 from pathlib import Path
 
 import streamlit as st
@@ -95,6 +102,8 @@ def process_uploaded_file(uploaded_file) -> None:
 
         st.success(f"{uploaded_file.name} added to the knowledge base ({chunk_count} chunks)")
     except Exception as exc:
+        # Beginner-facing errors are translated here so the UI teaches what went
+        # wrong instead of only surfacing a raw backend exception.
         st.error(humanize_document_error(exc))
 
 

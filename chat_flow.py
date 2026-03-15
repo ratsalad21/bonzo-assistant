@@ -1,3 +1,11 @@
+"""One-turn chat orchestration and persistence.
+
+This module is the bridge between the UI and the backend helpers. It takes a
+user prompt, runs orchestration, streams the answer into the interface, and
+saves the finished assistant message. Keeping that lifecycle in one place makes
+the app easier to trace from input to saved output.
+"""
+
 from typing import Any
 
 import streamlit as st
@@ -60,6 +68,8 @@ def handle_chat_turn(prompt: str, sidebar_settings: dict[str, Any], indexed_doc_
         agent_notes=agent_notes,
         specialist_outputs=specialist_outputs,
     )
+    # The final instruction block is where the app combines system prompt,
+    # specialist handoffs, and retrieved context into one model-facing request.
 
     # Trim locally before sending the request so the app can explain the change
     # instead of failing with a token-limit error from the API.

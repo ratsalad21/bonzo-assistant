@@ -1,3 +1,10 @@
+"""Session-state setup for the Streamlit app.
+
+This module exists so the rest of the app can assume certain keys already
+exist in `st.session_state`. That keeps UI and chat code cleaner and makes the
+Streamlit rerun model easier for a beginner to understand.
+"""
+
 import streamlit as st
 
 from config import (
@@ -28,6 +35,8 @@ def initialize_app_state() -> None:
     if "selected_model" not in st.session_state:
         st.session_state.selected_model = OPENAI_MODEL
 
+    # These UI defaults live in session state so toggles survive reruns and
+    # still behave like normal application settings from the user's perspective.
     if "use_rag" not in st.session_state:
         st.session_state.use_rag = DEFAULT_USE_RAG
 

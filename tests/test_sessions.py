@@ -1,3 +1,5 @@
+"""Small tests for chat-session save/load behavior."""
+
 from pathlib import Path
 
 import sessions

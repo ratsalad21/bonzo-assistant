@@ -1,3 +1,11 @@
+"""Simple multi-agent orchestration for one chat turn.
+
+This module is the "manager brain" of the app. It decides which specialist
+roles should help, runs them in a bounded sequence, and packages their outputs
+into handoff notes for the final answer call. The design is intentionally small
+so the orchestration stays teachable.
+"""
+
 import re
 from typing import Any
 
@@ -23,6 +31,9 @@ WRITING_KEYWORDS = {
     "draft": "draft",
     "tone": "tone",
 }
+# These keyword maps are deliberately lightweight. They are not meant to be a
+# perfect intent-classification system, just a readable first step that shows
+# how routing decisions can be encoded in plain Python.
 CODING_KEYWORDS = {
     "code": "code",
     "bug": "debug",
@@ -351,6 +362,8 @@ def _choose_next_specialist(
     specialist_outputs: list[dict[str, Any]],
 ) -> tuple[str | None, str, str | None]:
     """Pick the next specialist to run based on the current orchestration state."""
+    # The sequential loop is intentionally rule-based instead of model-driven so
+    # the learning flow is easier to inspect and reason about.
     retrieval_ran = _has_specialist_output(specialist_outputs, "retrieval_agent")
     coding_ran = _has_specialist_output(specialist_outputs, "coding_agent")
     writing_ran = _has_specialist_output(specialist_outputs, "writing_agent")
@@ -441,6 +454,8 @@ def build_agent_plan(
 
     loop_completed = True
     for step_number in range(1, MAX_SPECIALIST_STEPS + 1):
+        # The hard step limit is our simple stopping rule. It keeps the demo
+        # from drifting into endless delegation loops.
         next_agent, delegate_reason, specialist_goal = _choose_next_specialist(
             prompt,
             sidebar_settings,

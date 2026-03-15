@@ -1,3 +1,11 @@
+"""Central configuration for the app.
+
+This module reads environment variables once, defines shared constants, and
+creates the local folders the app expects. Keeping that work in one place makes
+the rest of the code simpler because other modules can import ready-to-use
+settings instead of repeating the same setup logic.
+"""
+
 import os
 from pathlib import Path
 
@@ -17,10 +25,14 @@ MOCK_MODE = os.getenv("MOCK_MODE", "false").strip().lower() in {"1", "true", "ye
 # This is our local budgeting hint for trimming history before requests go out.
 APP_MODEL_CONTEXT_WINDOW = int(os.getenv("APP_MODEL_CONTEXT_WINDOW", "128000"))
 
+# These paths stay local on purpose because local persistence is much easier to
+# learn from than a hosted storage system.
 DOCS_DIR = Path(os.getenv("DOCS_DIR", "./docs")).resolve()
 CHAT_HISTORY_DIR = Path(os.getenv("CHAT_HISTORY_DIR", "./chat_history")).resolve()
 CHROMA_DB_PATH = Path(os.getenv("CHROMA_DB_PATH", "./chroma_db")).resolve()
 
+# These constants are small "teaching defaults" rather than deeply optimized
+# production settings. They aim to keep the app approachable and stable.
 MAX_FILE_SIZE = 10 * 1024 * 1024
 MAX_CONTEXT_CHARS = 2000
 MAX_HISTORY_MESSAGES = 8
@@ -43,4 +55,7 @@ DOCS_DIR.mkdir(parents=True, exist_ok=True)
 CHAT_HISTORY_DIR.mkdir(parents=True, exist_ok=True)
 CHROMA_DB_PATH.mkdir(parents=True, exist_ok=True)
 
+# The app shows timestamps in Eastern time because that is the current learning
+# context for this project. Keeping the timezone explicit avoids hidden machine
+# defaults changing how timestamps appear.
 EASTERN = tz.gettz("America/New_York")

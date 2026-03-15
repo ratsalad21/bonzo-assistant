@@ -1,3 +1,10 @@
+"""OpenAI SDK client creation.
+
+This module gives the rest of the app one shared way to obtain the SDK client.
+That keeps provider-specific setup in one place and makes it easier to swap or
+debug later if the app moves to another endpoint.
+"""
+
 import os
 from functools import lru_cache
 
@@ -18,6 +25,8 @@ def get_openai_client() -> OpenAI:
     if not OPENAI_BASE_URL:
         os.environ.pop("OPENAI_BASE_URL", None)
 
+    # Build kwargs gradually so we only pass settings that are actually present.
+    # That keeps the SDK closer to its normal defaults.
     kwargs: dict[str, str] = {}
     if OPENAI_API_KEY:
         kwargs["api_key"] = OPENAI_API_KEY

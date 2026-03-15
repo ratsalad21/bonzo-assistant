@@ -1,3 +1,10 @@
+"""Streamlit entry point for the Bonzo Assistant app.
+
+This file stays intentionally small. Streamlit reruns the script top-to-bottom
+on every interaction, so keeping the entry point thin makes the app easier to
+follow and easier to debug. Most of the real behavior lives in helper modules.
+"""
+
 import streamlit as st
 
 from app_state import initialize_app_state
@@ -27,6 +34,8 @@ if not st.session_state.messages:
 render_chat_history(st.session_state.messages)
 
 chat_prompt = st.chat_input("Ask Bonzo anything...")
+# Starter prompts share the same chat handler as typed prompts so the app only
+# has one path for processing user turns.
 prompt = chat_prompt or starter_prompt
 
 if prompt:
