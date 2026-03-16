@@ -175,6 +175,7 @@ Recommended GitHub environment setup:
   - `OPENAI_API_KEY` if you are not staying in mock mode
 - Add environment variables:
   - `AZURE_WEBAPP_NAME`
+  - `AZURE_RESOURCE_GROUP`
   - `AZURE_CONTAINER_REGISTRY_NAME`
   - `AZURE_CONTAINER_REGISTRY_LOGIN_SERVER`
   - `AZURE_CONTAINER_REPOSITORY`
@@ -314,6 +315,7 @@ For both `dev` and `prod`, add these secrets:
 For both `dev` and `prod`, add these variables:
 
 - `AZURE_WEBAPP_NAME`
+- `AZURE_RESOURCE_GROUP`
 - `AZURE_CONTAINER_REGISTRY_NAME`
 - `AZURE_CONTAINER_REGISTRY_LOGIN_SERVER`
 - `AZURE_CONTAINER_REPOSITORY`
@@ -358,6 +360,7 @@ terraform output container_name
 That maps into GitHub like this:
 
 - `AZURE_WEBAPP_NAME` = `web_app_name`
+- `AZURE_RESOURCE_GROUP` = `resource_group_name`
 - `AZURE_CONTAINER_REGISTRY_NAME` = `acr_name`
 - `AZURE_CONTAINER_REGISTRY_LOGIN_SERVER` = `acr_login_server`
 - `AZURE_CONTAINER_REPOSITORY` = usually `bonzo-assistant`

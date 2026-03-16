@@ -51,7 +51,7 @@ jobs:
         shell: bash
         run: |
           missing=0
-          for name in AZURE_WEBAPP_NAME AZURE_CONTAINER_REGISTRY_NAME AZURE_CONTAINER_REGISTRY_LOGIN_SERVER; do
+          for name in AZURE_WEBAPP_NAME AZURE_RESOURCE_GROUP AZURE_CONTAINER_REGISTRY_NAME AZURE_CONTAINER_REGISTRY_LOGIN_SERVER; do
             if [ -z "${!name}" ]; then
               echo "::error::Missing GitHub environment variable: $name"
               missing=1
@@ -62,6 +62,7 @@ jobs:
           fi
         env:
           AZURE_WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
+          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
           AZURE_CONTAINER_REGISTRY_NAME: ${{ vars.AZURE_CONTAINER_REGISTRY_NAME }}
           AZURE_CONTAINER_REGISTRY_LOGIN_SERVER: ${{ vars.AZURE_CONTAINER_REGISTRY_LOGIN_SERVER }}
 
@@ -103,8 +104,17 @@ jobs:
           docker push "${{ steps.image.outputs.image_ref }}"
           docker push "${{ steps.image.outputs.latest_ref }}"
 
-      - name: Deploy image to Azure App Service
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
-          images: ${{ steps.image.outputs.image_ref }}
+      - name: Point App Service at pushed image
+        shell: bash
+        run: |
+          az webapp config container set \
+            --name "${AZURE_WEBAPP_NAME}" \
+            --resource-group "${AZURE_RESOURCE_GROUP}" \
+            --docker-custom-image-name "${IMAGE_REF}"
+          az webapp restart \
+            --name "${AZURE_WEBAPP_NAME}" \
+            --resource-group "${AZURE_RESOURCE_GROUP}"
+        env:
+          AZURE_WEBAPP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
+          AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+          IMAGE_REF: ${{ steps.image.outputs.image_ref }}

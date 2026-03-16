@@ -334,3 +334,29 @@ Use this format for new issues:
 - Follow-up:
   Before using GitHub Actions to validate a fix, confirm the relevant files are
   actually committed and pushed.
+
+## `azure/webapps-deploy` Reported No Credentials After OIDC Login
+
+- Date: 2026-03-16
+- Area: GitHub Actions / App Service deployment
+- Symptom:
+  The `Deploy App` workflow reached the final deployment step and failed with:
+  `No credentials found. Add an Azure login action before this action.`
+- Cause:
+  The workflow had already authenticated successfully with `azure/login`, but
+  the custom-container deployment flow using `azure/webapps-deploy` still did
+  not pick up usable credentials in this setup.
+- Fix:
+  Replace the final `azure/webapps-deploy` step with Azure CLI commands after
+  the successful OIDC login:
+
+  ```powershell
+  az webapp config container set --name <web-app-name> --resource-group <resource-group> --docker-custom-image-name <image-ref>
+  az webapp restart --name <web-app-name> --resource-group <resource-group>
+  ```
+
+  This uses the already-authenticated Azure CLI session from `azure/login`.
+- Follow-up:
+  For this repo, GitHub app deployment now expects the GitHub environment
+  variable `AZURE_RESOURCE_GROUP` in addition to the existing web app and ACR
+  values.
