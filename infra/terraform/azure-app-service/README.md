@@ -157,6 +157,7 @@ terraform output docker_image_reference
   - `App Configuration Data Reader` on App Configuration
   - secret read access in Key Vault
 - The Terraform caller also gets `App Configuration Data Owner` on the App Configuration store so Terraform can create the initial key-values during apply
+- If you are migrating from the older "current caller" Terraform pattern to `DEPLOYMENT_PRINCIPAL_OBJECT_ID` and `LOCAL_OPERATOR_OBJECT_ID`, expect one infrastructure apply that replaces the old bootstrap access resources with the new explicit operator resources
 - Terraform ignores later changes to the running container image tag so GitHub Actions can deploy new image SHAs without Terraform immediately rolling them back on the next infra apply
 
 ## GitHub Actions CD

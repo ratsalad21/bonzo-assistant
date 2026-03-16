@@ -362,6 +362,27 @@ Use this format for new issues:
   GitHub environment to the service principal object ID, not the application
   client ID.
 
+## `RoleAssignmentExists` Happened During The Operator Identity Migration
+
+- Date: 2026-03-16
+- Area: Terraform identity migration / App Configuration RBAC
+- Symptom:
+  GitHub `Deploy Infrastructure` `apply` got through most of the migration and
+  then failed with a `409 Conflict` / `RoleAssignmentExists` error while
+  creating `operator_app_config_data_owner` for the GitHub principal.
+- Cause:
+  A manual `App Configuration Data Owner` role assignment for the GitHub
+  service principal already existed on the App Configuration store, so
+  Terraform could not create the same assignment itself.
+- Fix:
+  Remove the duplicate manual role assignment, then rerun `Deploy
+  Infrastructure` with `apply` so Terraform can create and manage the role
+  assignment in state.
+- Follow-up:
+  During the one-time migration from the old `current` resources to the new
+  explicit operator resources, let Terraform own the final role assignments
+  instead of keeping overlapping manual copies in place.
+
 ## `azure/webapps-deploy` Reported No Credentials After OIDC Login
 
 - Date: 2026-03-16
