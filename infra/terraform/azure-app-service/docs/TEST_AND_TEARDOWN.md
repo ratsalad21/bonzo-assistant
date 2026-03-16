@@ -83,6 +83,9 @@ If you want to test GitHub automation too:
 
 - run `deploy-infra.yml` with `plan`
 - run `deploy-app.yml` manually for `dev`
+- set GitHub environment variable `AUTO_DEPLOY_ENABLED=true` only while the
+  `dev` app infrastructure actually exists if you want `main` pushes to deploy
+  automatically
 
 ## 5. Destroy The Main App Stack
 
@@ -133,6 +136,14 @@ If you want a complete cleanup beyond Azure resources, also remove:
 - GitHub `dev` / `prod` environments if no longer needed
 - Microsoft Entra app registration used for GitHub Actions
 - Azure role assignments created for that identity
+
+If you want to keep the GitHub environment but avoid failed automatic app
+deploys after teardown:
+
+- leave the GitHub environment in place
+- set `AUTO_DEPLOY_ENABLED=false`
+- next time, run `Deploy Infrastructure` first, then either turn
+  `AUTO_DEPLOY_ENABLED=true` back on or run `Deploy App` manually
 
 ## Practical Cost Reminder
 

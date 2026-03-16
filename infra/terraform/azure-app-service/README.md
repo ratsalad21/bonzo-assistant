@@ -165,7 +165,7 @@ terraform output docker_image_reference
 This repo includes two deployment workflows:
 
 - `deploy-app.yml`
-  - automatically deploys `main` to the `dev` GitHub environment after the `CI` workflow succeeds
+  - can automatically deploy `main` to the `dev` GitHub environment after the `CI` workflow succeeds when `AUTO_DEPLOY_ENABLED=true`
   - can also be run manually for `dev` or `prod`
   - builds the Docker image, pushes it to ACR, and points App Service at the pushed SHA tag
 - `deploy-infra.yml`
@@ -186,6 +186,7 @@ Recommended GitHub environment setup:
   - `AZURE_CONTAINER_REGISTRY_NAME`
   - `AZURE_CONTAINER_REGISTRY_LOGIN_SERVER`
   - `AZURE_CONTAINER_REPOSITORY`
+  - `AUTO_DEPLOY_ENABLED`
   - `TF_STATE_RESOURCE_GROUP`
   - `TF_STATE_STORAGE_ACCOUNT`
   - `TF_STATE_CONTAINER`
@@ -327,6 +328,7 @@ For both `dev` and `prod`, add these variables:
 - `AZURE_CONTAINER_REGISTRY_NAME`
 - `AZURE_CONTAINER_REGISTRY_LOGIN_SERVER`
 - `AZURE_CONTAINER_REPOSITORY`
+- `AUTO_DEPLOY_ENABLED`
 - `TF_STATE_RESOURCE_GROUP`
 - `TF_STATE_STORAGE_ACCOUNT`
 - `TF_STATE_CONTAINER`
@@ -374,6 +376,7 @@ That maps into GitHub like this:
 - `AZURE_CONTAINER_REGISTRY_NAME` = `acr_name`
 - `AZURE_CONTAINER_REGISTRY_LOGIN_SERVER` = `acr_login_server`
 - `AZURE_CONTAINER_REPOSITORY` = usually `bonzo-assistant`
+- `AUTO_DEPLOY_ENABLED` = `true` only when you want successful `CI` runs on `main` to auto-run the app deployment against an existing environment
 - `TF_STATE_RESOURCE_GROUP` = bootstrap-state `resource_group_name`
 - `TF_STATE_STORAGE_ACCOUNT` = bootstrap-state `storage_account_name`
 - `TF_STATE_CONTAINER` = bootstrap-state `container_name`
@@ -385,7 +388,7 @@ Normal path:
 
 1. push to `main`
 2. `CI` runs
-3. if `CI` passes, `deploy-app.yml` deploys to the `dev` environment
+3. if `CI` passes and `AUTO_DEPLOY_ENABLED=true` in the `dev` GitHub environment, `deploy-app.yml` deploys to the `dev` environment
 
 Manual path:
 
@@ -400,6 +403,8 @@ Important reminder:
 
 - GitHub Actions builds and deploys the code that is committed and pushed to
   GitHub, not uncommitted local workspace changes
+- If the Azure app stack is currently destroyed, set `AUTO_DEPLOY_ENABLED=false`
+  so pushes to `main` do not try to deploy into missing infrastructure
 
 ## How The App Reads Config In Azure
 

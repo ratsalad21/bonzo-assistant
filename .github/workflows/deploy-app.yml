@@ -42,12 +42,33 @@ jobs:
       DEPLOY_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'dev' }}
 
     steps:
+      - name: Decide whether to deploy
+        id: gate
+        shell: bash
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+          elif [ "${AUTO_DEPLOY_ENABLED}" = "true" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          AUTO_DEPLOY_ENABLED: ${{ vars.AUTO_DEPLOY_ENABLED }}
+
+      - name: Skip automatic deploy
+        if: steps.gate.outputs.should_deploy != 'true'
+        run: |
+          echo "Skipping automatic app deployment because AUTO_DEPLOY_ENABLED is not set to true for this environment."
+
       - name: Check out repository
+        if: steps.gate.outputs.should_deploy == 'true'
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
       - name: Validate deployment settings
+        if: steps.gate.outputs.should_deploy == 'true'
         shell: bash
         run: |
           missing=0
@@ -67,6 +88,7 @@ jobs:
           AZURE_CONTAINER_REGISTRY_LOGIN_SERVER: ${{ vars.AZURE_CONTAINER_REGISTRY_LOGIN_SERVER }}
 
       - name: Azure login with OIDC
+        if: steps.gate.outputs.should_deploy == 'true'
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
@@ -74,9 +96,11 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to Azure Container Registry
+        if: steps.gate.outputs.should_deploy == 'true'
         run: az acr login --name "${{ vars.AZURE_CONTAINER_REGISTRY_NAME }}"
 
       - name: Build image tags
+        if: steps.gate.outputs.should_deploy == 'true'
         id: image
         shell: bash
         run: |
@@ -93,6 +117,7 @@ jobs:
           AZURE_CONTAINER_REPOSITORY: ${{ vars.AZURE_CONTAINER_REPOSITORY }}
 
       - name: Build container image
+        if: steps.gate.outputs.should_deploy == 'true'
         run: |
           docker build \
             --tag "${{ steps.image.outputs.image_ref }}" \
@@ -100,11 +125,13 @@ jobs:
             .
 
       - name: Push container image
+        if: steps.gate.outputs.should_deploy == 'true'
         run: |
           docker push "${{ steps.image.outputs.image_ref }}"
           docker push "${{ steps.image.outputs.latest_ref }}"
 
       - name: Point App Service at pushed image
+        if: steps.gate.outputs.should_deploy == 'true'
         shell: bash
         run: |
           az webapp config container set \
