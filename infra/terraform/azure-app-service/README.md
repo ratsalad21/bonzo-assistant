@@ -9,6 +9,45 @@ This folder provisions a beginner-friendly Azure hosting stack for `bonzo-assist
 - Azure Key Vault
 - Azure App Configuration
 
+## Documentation Map
+
+Use these docs together:
+
+- `README.md`
+  - primary setup and architecture guide
+- `docs/TROUBLESHOOTING.md`
+  - errors we hit and how we fixed them
+- `docs/COSTS.md`
+  - rough cost expectations for dev/test use
+- `docs/TEST_AND_TEARDOWN.md`
+  - short-lived apply, test, destroy workflow
+- `docs/COMMANDS.md`
+  - quick command reference for setup and debugging
+
+For setup issues we hit along the way, keep notes in:
+
+```text
+docs/TROUBLESHOOTING.md
+```
+
+For rough cost expectations for this stack, see:
+
+```text
+docs/COSTS.md
+```
+
+For a short-lived apply/test/destroy runbook, see:
+
+```text
+docs/TEST_AND_TEARDOWN.md
+```
+
+For a command reference used during setup and debugging, see:
+
+```text
+docs/COMMANDS.md
+```
+
 ## Remote State First
 
 Before you run this workspace, create the remote Terraform state storage in:
@@ -105,11 +144,13 @@ terraform output docker_image_reference
 
 - App Service is configured to persist app files under `/home/site/data/...`
 - `WEBSITES_ENABLE_APP_SERVICE_STORAGE=true` is set so local docs, chat history, and Chroma data have persistent storage
+- WebSockets must be enabled on the App Service app because the hosted Streamlit UI relies on them
 - App Service uses a system-assigned managed identity
 - That identity gets:
   - `AcrPull` on ACR
   - `App Configuration Data Reader` on App Configuration
   - secret read access in Key Vault
+- The Terraform caller also gets `App Configuration Data Owner` on the App Configuration store so Terraform can create the initial key-values during apply
 - Terraform ignores later changes to the running container image tag so GitHub Actions can deploy new image SHAs without Terraform immediately rolling them back on the next infra apply
 
 ## GitHub Actions CD
@@ -165,6 +206,7 @@ Why both are needed:
 - `User Access Administrator` lets Terraform create the role assignments in this repo, such as:
   - `AcrPull` for the App Service managed identity
   - `App Configuration Data Reader` for the App Service managed identity
+  - `App Configuration Data Owner` for the Terraform caller so it can write App Configuration keys
 
 If you prefer one broader role while learning, `Owner` on the resource group also works, but it is more permission than most teams want long term.
 
@@ -285,6 +327,7 @@ Optional variables the infrastructure workflow can also use:
 - `LOCATION`
 - `APP_SERVICE_PLAN_SKU_NAME`
 - `ACR_SKU`
+- `APP_CONFIGURATION_SKU`
 - `CONTAINER_IMAGE_TAG`
 - `MOCK_MODE`
 - `OPENAI_MODEL`
@@ -338,6 +381,11 @@ Manual path:
 4. choose `plan` or `apply`
 
 You can also run `Deploy App` manually for either environment.
+
+Important reminder:
+
+- GitHub Actions builds and deploys the code that is committed and pushed to
+  GitHub, not uncommitted local workspace changes
 
 ## How The App Reads Config In Azure
 

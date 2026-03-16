@@ -17,3 +17,9 @@ chat_history/*.json
 .pytest_cache/
 infra/terraform/**/.terraform/
 infra/terraform/**/backend.hcl
+infra/terraform/**/terraform.tfvars
+infra/terraform/**/terraform.tfstate
+infra/terraform/**/terraform.tfstate.*
+infra/terraform/**/tfplan
+appservice-logs/
+appservice-logs.zip

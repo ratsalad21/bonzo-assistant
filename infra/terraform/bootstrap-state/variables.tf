@@ -7,7 +7,7 @@ variable "name_prefix" {
 variable "location" {
   description = "Azure region for the Terraform state resources."
   type        = string
-  default     = "eastus"
+  default     = "eastus2"
 }
 
 variable "resource_group_name" {

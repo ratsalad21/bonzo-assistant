@@ -1,5 +1,6 @@
-location               = "eastus"
+location               = "eastus2"
 name_prefix            = "bonzo"
+app_configuration_sku  = "developer"
 container_repository   = "bonzo-assistant"
 container_image_tag    = "latest"
 mock_mode              = true

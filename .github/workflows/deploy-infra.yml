@@ -92,9 +92,10 @@ jobs:
         run: |
           cat > ci.auto.tfvars <<EOF
           name_prefix                  = "${NAME_PREFIX:-bonzo}"
-          location                     = "${LOCATION:-eastus}"
+          location                     = "${LOCATION:-eastus2}"
           app_service_plan_sku_name    = "${APP_SERVICE_PLAN_SKU_NAME:-B1}"
           acr_sku                      = "${ACR_SKU:-Basic}"
+          app_configuration_sku        = "${APP_CONFIGURATION_SKU:-standard}"
           container_repository         = "${CONTAINER_REPOSITORY:-bonzo-assistant}"
           container_image_tag          = "${CONTAINER_IMAGE_TAG:-latest}"
           mock_mode                    = ${MOCK_MODE:-true}
@@ -109,6 +110,7 @@ jobs:
           LOCATION: ${{ vars.LOCATION }}
           APP_SERVICE_PLAN_SKU_NAME: ${{ vars.APP_SERVICE_PLAN_SKU_NAME }}
           ACR_SKU: ${{ vars.ACR_SKU }}
+          APP_CONFIGURATION_SKU: ${{ vars.APP_CONFIGURATION_SKU }}
           CONTAINER_REPOSITORY: ${{ vars.AZURE_CONTAINER_REPOSITORY }}
           CONTAINER_IMAGE_TAG: ${{ vars.CONTAINER_IMAGE_TAG }}
           MOCK_MODE: ${{ vars.MOCK_MODE }}

@@ -13,7 +13,7 @@ variable "name_prefix" {
 variable "location" {
   description = "Azure region for all resources."
   type        = string
-  default     = "eastus"
+  default     = "eastus2"
 }
 
 variable "app_service_plan_sku_name" {
@@ -26,6 +26,20 @@ variable "acr_sku" {
   description = "SKU for the Azure Container Registry."
   type        = string
   default     = "Basic"
+}
+
+variable "app_configuration_sku" {
+  description = "SKU for Azure App Configuration."
+  type        = string
+  default     = "standard"
+
+  validation {
+    condition = contains(
+      ["free", "developer", "standard", "premium"],
+      lower(var.app_configuration_sku)
+    )
+    error_message = "app_configuration_sku must be one of: free, developer, standard, premium."
+  }
 }
 
 variable "container_repository" {

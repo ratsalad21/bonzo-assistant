@@ -104,7 +104,13 @@ resource "azurerm_app_configuration" "this" {
   name                = local.app_configuration_name
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
-  sku                 = "standard"
+  sku                 = lower(var.app_configuration_sku)
+}
+
+resource "azurerm_role_assignment" "current_app_config_data_owner" {
+  scope                = azurerm_app_configuration.this.id
+  role_definition_name = "App Configuration Data Owner"
+  principal_id         = data.azurerm_client_config.current.object_id
 }
 
 resource "azurerm_app_configuration_key" "settings" {
@@ -113,6 +119,8 @@ resource "azurerm_app_configuration_key" "settings" {
   key                    = "${var.app_configuration_key_prefix}${each.key}"
   label                  = local.environment
   value                  = each.value
+
+  depends_on = [azurerm_role_assignment.current_app_config_data_owner]
 }
 
 resource "azurerm_linux_web_app" "this" {
@@ -129,7 +137,9 @@ resource "azurerm_linux_web_app" "this" {
   site_config {
     always_on                               = true
     health_check_path                       = "/"
+    health_check_eviction_time_in_min       = 2
     container_registry_use_managed_identity = true
+    websockets_enabled                      = true
 
     application_stack {
       docker_image_name   = "${var.container_repository}:${var.container_image_tag}"
