@@ -335,6 +335,33 @@ Use this format for new issues:
   Before using GitHub Actions to validate a fix, confirm the relevant files are
   actually committed and pushed.
 
+## Local And GitHub Terraform Runs Fought Over "Current Caller" Access
+
+- Date: 2026-03-16
+- Area: Terraform identity design
+- Symptom:
+  GitHub `Deploy Infrastructure` could authenticate successfully but still
+  failed while reading App Configuration keys, and Terraform planned to replace
+  bootstrap access resources with the GitHub service principal object ID.
+- Cause:
+  The Terraform module originally granted Key Vault and App Configuration
+  bootstrap permissions to `data.azurerm_client_config.current.object_id`.
+  That meant local runs used the local user object ID, while GitHub runs used
+  the GitHub service principal object ID. The two execution paths kept fighting
+  over the same resources.
+- Fix:
+  Replace the "current caller" pattern with explicit variables:
+
+  - `deployment_principal_object_id`
+  - `local_operator_object_id`
+
+  Then manage Key Vault/App Configuration bootstrap access from those explicit
+  IDs instead of from whichever identity happens to run Terraform.
+- Follow-up:
+  For GitHub infrastructure runs, set `DEPLOYMENT_PRINCIPAL_OBJECT_ID` in the
+  GitHub environment to the service principal object ID, not the application
+  client ID.
+
 ## `azure/webapps-deploy` Reported No Credentials After OIDC Login
 
 - Date: 2026-03-16

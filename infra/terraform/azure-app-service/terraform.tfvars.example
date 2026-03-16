@@ -1,6 +1,8 @@
 location               = "eastus2"
 name_prefix            = "bonzo"
 app_configuration_sku  = "developer"
+# deployment_principal_object_id = ""
+# local_operator_object_id       = ""
 container_repository   = "bonzo-assistant"
 container_image_tag    = "latest"
 mock_mode              = true

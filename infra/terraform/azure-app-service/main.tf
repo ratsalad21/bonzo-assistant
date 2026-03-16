@@ -45,6 +45,10 @@ locals {
       OPENAI_API_KEY = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.openai_api_key[0].versionless_id})"
     } : {}
   )
+  operator_object_ids = toset(compact([
+    trimspace(var.deployment_principal_object_id),
+    trimspace(var.local_operator_object_id),
+  ]))
 }
 
 resource "azurerm_resource_group" "this" {
@@ -78,10 +82,12 @@ resource "azurerm_key_vault" "this" {
   purge_protection_enabled   = false
 }
 
-resource "azurerm_key_vault_access_policy" "current" {
+resource "azurerm_key_vault_access_policy" "operators" {
+  for_each = local.operator_object_ids
+
   key_vault_id = azurerm_key_vault.this.id
   tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = data.azurerm_client_config.current.object_id
+  object_id    = each.value
 
   secret_permissions = [
     "Delete",
@@ -97,7 +103,7 @@ resource "azurerm_key_vault_secret" "openai_api_key" {
   value        = var.openai_api_key
   key_vault_id = azurerm_key_vault.this.id
 
-  depends_on = [azurerm_key_vault_access_policy.current]
+  depends_on = [azurerm_key_vault_access_policy.operators]
 }
 
 resource "azurerm_app_configuration" "this" {
@@ -107,10 +113,12 @@ resource "azurerm_app_configuration" "this" {
   sku                 = lower(var.app_configuration_sku)
 }
 
-resource "azurerm_role_assignment" "current_app_config_data_owner" {
+resource "azurerm_role_assignment" "operator_app_config_data_owner" {
+  for_each = local.operator_object_ids
+
   scope                = azurerm_app_configuration.this.id
   role_definition_name = "App Configuration Data Owner"
-  principal_id         = data.azurerm_client_config.current.object_id
+  principal_id         = each.value
 }
 
 resource "azurerm_app_configuration_key" "settings" {
@@ -120,7 +128,7 @@ resource "azurerm_app_configuration_key" "settings" {
   label                  = local.environment
   value                  = each.value
 
-  depends_on = [azurerm_role_assignment.current_app_config_data_owner]
+  depends_on = [azurerm_role_assignment.operator_app_config_data_owner]
 }
 
 resource "azurerm_linux_web_app" "this" {

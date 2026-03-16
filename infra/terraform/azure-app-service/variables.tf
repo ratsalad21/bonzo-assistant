@@ -101,3 +101,15 @@ variable "app_configuration_key_prefix" {
   type        = string
   default     = "bonzo:"
 }
+
+variable "deployment_principal_object_id" {
+  description = "Optional object ID for the GitHub/Azure deployment principal that should manage App Configuration and Key Vault bootstrap access."
+  type        = string
+  default     = ""
+}
+
+variable "local_operator_object_id" {
+  description = "Optional object ID for a local user or admin principal that should keep App Configuration and Key Vault bootstrap access."
+  type        = string
+  default     = ""
+}

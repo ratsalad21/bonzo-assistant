@@ -48,6 +48,12 @@ For a command reference used during setup and debugging, see:
 docs/COMMANDS.md
 ```
 
+For a quick guide to the Azure IDs used in GitHub and Terraform, see:
+
+```text
+docs/ID_REFERENCE.md
+```
+
 ## Remote State First
 
 Before you run this workspace, create the remote Terraform state storage in:
@@ -182,6 +188,7 @@ Recommended GitHub environment setup:
   - `TF_STATE_RESOURCE_GROUP`
   - `TF_STATE_STORAGE_ACCOUNT`
   - `TF_STATE_CONTAINER`
+  - `DEPLOYMENT_PRINCIPAL_OBJECT_ID`
 
 Helpful Terraform outputs to copy into GitHub:
 
@@ -322,6 +329,7 @@ For both `dev` and `prod`, add these variables:
 - `TF_STATE_RESOURCE_GROUP`
 - `TF_STATE_STORAGE_ACCOUNT`
 - `TF_STATE_CONTAINER`
+- `DEPLOYMENT_PRINCIPAL_OBJECT_ID`
 
 Optional variables the infrastructure workflow can also use:
 
@@ -337,6 +345,7 @@ Optional variables the infrastructure workflow can also use:
 - `OPENAI_BASE_URL`
 - `APP_MODEL_CONTEXT_WINDOW`
 - `APP_CONFIGURATION_KEY_PREFIX`
+- `LOCAL_OPERATOR_OBJECT_ID`
 
 ### 8. Fill those values from Terraform outputs
 
@@ -367,6 +376,7 @@ That maps into GitHub like this:
 - `TF_STATE_RESOURCE_GROUP` = bootstrap-state `resource_group_name`
 - `TF_STATE_STORAGE_ACCOUNT` = bootstrap-state `storage_account_name`
 - `TF_STATE_CONTAINER` = bootstrap-state `container_name`
+- `DEPLOYMENT_PRINCIPAL_OBJECT_ID` = object ID of the GitHub service principal, not the application/client ID
 
 ### 9. Run the workflows
 
