@@ -57,6 +57,9 @@ You start paying when the billable resources actually exist, especially:
 ## Notes
 
 - Prices vary by region and can change over time
+- GitHub Actions can also add cost depending on repo visibility, account plan,
+  and included runner minutes, but for this setup Azure is usually the larger
+  cost driver
 - This repo originally tried `eastus`, then moved to `eastus2` after quota issues
 - If your subscription cannot create Basic App Service plans, the stack may need
   a different hosting target such as Azure Container Apps
